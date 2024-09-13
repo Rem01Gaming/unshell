@@ -1,0 +1,151 @@
+#!/bin/env bash
+
+ulimit -s unlimited >/dev/null 2>&1
+
+show_usage_unshell() {
+	cat <<"EOF"
+unshell - Deobfuscate any shell scripts with multiple methods
+  usage: deshc encrypted1 encrypted2
+EOF
+}
+
+decrypt_ssc() {
+	counter=$((counter + 1))
+	echo "Layer $counter: ssc"
+	spath=$(echo $PATH | cut -d: -f1)
+	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
+	chmod +x $spath/$filename.temp1.sh
+	for sec in {15..28}; do
+		$filename.temp1.sh &
+		child=$!
+		sleep 0.0"$sec"
+		kill -STOP $child
+		cat /proc/$child/fd/3 >"./$filename.temp2.sh"
+		kill -TERM $child
+
+		if grep -q '#!/' "./$filename.temp2.sh"; then
+			break
+		fi
+	done
+	rm -f $spath/$filename.temp1.sh
+	if grep -q '#!/' "./$filename.temp2.sh"; then
+		mv ./$filename.temp2.sh ./$filename.temp1.sh
+	else
+		rm ./$filename.temp2.sh ./$filename.temp1.sh
+	fi
+}
+
+decrypt_shc() {
+	counter=$((counter + 1))
+	echo "Layer $counter: shc"
+	spath=$(echo $PATH | cut -d: -f1)
+	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
+	chmod +x $spath/$filename.temp1.sh
+	for sec in {1..7}; do
+		$filename.temp1.sh &
+		child=$!
+		sleep 0.0"$sec"
+		kill -STOP $child
+		cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/' >"./$filename.temp2.sh"
+		kill -TERM $child
+
+		if grep -q '#!/' "./$filename.temp2.sh"; then
+			break
+		fi
+	done
+	rm -f $spath/$filename.temp1.sh
+	if grep -q '#!/' "./$filename.temp2.sh"; then
+		mv ./$filename.temp2.sh ./$filename.temp1.sh
+	else
+		rm ./$filename.temp2.sh ./$filename.temp1.sh
+	fi
+}
+
+decrypt_bashrock() {
+	counter=$((counter + 1))
+	echo "Layer $counter: bashrock"
+	sed 's/eval "$x";/echo "$x";/g' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
+decrypt_bashprotector() {
+	counter=$((counter + 1))
+	echo "Layer $counter: bashprotector"
+	sed 's/\beval\b/echo/g' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh | bash >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
+decrypt_bashobsf() {
+	counter=$((counter + 1))
+	echo "Layer $counter: bash-obfuscate"
+	sed 's/eval "\$/echo "\$/g; s/\[ "$(id -u)" -ne 2000 \]/! true/' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
+decrypt_base64() {
+	counter=$((counter + 1))
+	echo "Layer $counter: base64"
+	sed 's/base64 -d | [a-z\/]*sh/base64 -d/; s/\[ "$(id -u)" -ne 2000 \]/! true/' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
+init_dec() {
+	[ ! -f $1 ] && echo "file $1 does not exist!" && return 1
+
+	while true; do
+		if grep -q '$RzE' ./$filename.temp1.sh; then
+			decrypt_bashrock
+			PASSED_LOOP=1
+		elif grep -q 'Tx=Eds' ./$filename.temp1.sh; then
+			decrypt_bashprotector
+			PASSED_LOOP=1
+		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh; then
+			decrypt_bashobsf
+			PASSED_LOOP=1
+		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
+			decrypt_base64
+			PASSED_LOOP=1
+		elif strings ./$filename.temp1.sh | grep -q 'SSC_ARGV0'; then
+			decrypt_ssc
+			PASSED_LOOP1
+		elif strings ./$filename.temp1.sh | grep -q 'E:\sneither\sargv\[0\]\snor\s\$_\sworks\.'; then
+			decrypt_shc
+			PASSED_LOOP=1
+		else
+			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh
+			break
+		fi
+	done
+
+	if [ ! -s ./$filename.temp1.sh ]; then
+		echo "Failed to deobfuscate $1"
+		remove_temp
+		return 1
+	fi
+
+	mv ./$filename.temp1.sh ./$filename.dec.sh
+	echo "./$filename.dec.sh unshelled"
+	remove_temp
+}
+
+remove_temp() {
+	rm -f ./$filename.temp*.sh
+	counter=0
+}
+
+if [ -z $1 ]; then
+	show_usage_unshell
+	echo -e "\nerror: no input file"
+fi
+
+for file in "$@"; do
+	PASSED_LOOP=0
+	filename=$(basename $file)
+	cp $file ./$filename.temp1.sh
+	echo "Decrypting $file → ./$filename.dec.sh"
+	init_dec $file
+done
