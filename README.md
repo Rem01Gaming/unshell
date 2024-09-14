@@ -1,5 +1,13 @@
+![unshell_hero](./unshell-banner.png)
 # Unshell
-Unshell is an absolute script kiddies nighmare that deobfuscate some popular shell script obfuscation easily.
+> The Script Kiddies Nighmare
+
+Effortlessly deobfuscate shell scripts back into source code even with heavenly and multi layered obfuscation.
+
+## Features
+- Zero configuration: There's no need for any configuration
+- Penetrate: Multiple layered obfuscation is not a problem
+- Easy to use: just `unshell encrypted1 encrypted2` in cmd
 
 ## Supported obfuscation method
 <details>
