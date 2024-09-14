@@ -39,7 +39,7 @@ Bashrock randomize the script with random variables layered by single `base64` e
 
 <details>
 <summary>Bashfuscate</summary>
-An combination of BashProtector and bash-obfuscate.
+Does exactly the same as BashProtector.
 </details>
 
 <details>
