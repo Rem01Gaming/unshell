@@ -2,11 +2,11 @@
 # Unshell
 > The Script Kiddies Nighmare
 
-Effortlessly deobfuscate shell scripts back into source code even with heavenly and multi layered obfuscation.
+Effortlessly deobfuscate shell scripts back into source code even with heavenly and multi layered obfuscation. unshell will search for patterns on shell script, determine and deobfuscate accordingly.
 
 ## Features
 - Zero configuration: There's no need for any configuration
-- Penetrate: Multiple layered obfuscation is not a problem
+- Penetrate: Multi layered obfuscation is not a problem
 - Easy to use: just `unshell encrypted1 encrypted2` in cmd
 
 ## Supported obfuscation method
@@ -14,7 +14,7 @@ Effortlessly deobfuscate shell scripts back into source code even with heavenly 
 <summary>Shell Script Compiler (SHC)</summary>
 SHC works internally called execve to shell, it decrypted at runtimes and visible via command line args process
 
-eg: `/bin/sh -c "decrypted shell"`
+eg: <code>/bin/sh -c "decrypted shell"`</code>
 </details>
 
 <details>
@@ -38,8 +38,13 @@ Bashrock randomize the script with random variables layered by single `base64` e
 </details>
 
 <details>
+<summary>Bashfuscate</summary>
+An combination of BashProtector and bash-obfuscate.
+</details>
+
+<details>
 <summary>base64</summary>
-Not too crazy, just classic `echo "c29tZSBiYXNlNjQgZW5jcnlwdGVkIHNoaXQK" | base64 -d | sh`.
+Not too crazy, just classic <code>echo "ZWNobyBzb21lIGJhc2U2NCBlbmNyeXB0ZWQgc2hpdAo=" | base64 -d | sh</code>.
 </details>
 
 ## Usage
