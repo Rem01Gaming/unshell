@@ -137,6 +137,11 @@ remove_temp() {
 	counter=0
 }
 
+if ! hash strings; do
+	echo "Please install binutils or binutils-is-llvm!"
+	exit 1
+done
+
 if [ -z $1 ]; then
 	show_usage_unshell
 	echo -e "\nerror: no input file"
@@ -146,6 +151,6 @@ for file in "$@"; do
 	PASSED_LOOP=0
 	filename=$(basename $file)
 	cp $file ./$filename.temp1.sh
-	echo "Decrypting $file → ./$filename.dec.sh"
+	echo "Deobfuscating $file → ./$filename.dec.sh"
 	init_dec $file
 done
