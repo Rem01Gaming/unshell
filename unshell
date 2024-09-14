@@ -137,10 +137,10 @@ remove_temp() {
 	counter=0
 }
 
-if ! hash strings; do
+if ! hash strings; then
 	echo "Please install binutils or binutils-is-llvm!"
 	exit 1
-done
+fi
 
 if [ -z $1 ]; then
 	show_usage_unshell
