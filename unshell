@@ -3,10 +3,35 @@
 ulimit -s unlimited >/dev/null 2>&1
 
 show_usage_unshell() {
-	cat <<"EOF"
-unshell - Deobfuscate any shell scripts with multiple methods
-  usage: deshc encrypted1 encrypted2
-EOF
+	printf "%s - Deobfuscate any shell scripts with multiple methods
+  Usage: %s [OPTION]... [FILE]...
+
+  Options:
+    -h --help
+      print this message
+    -v, --verbose
+      Be verbose
+    -d, --execve-delay [DECIMAL]
+      Set custom execve delay time in seconds for SHC and SSC encryption
+    -U, --update
+      Update the script
+
+  Example usages:
+    %s install.sh menu.sh
+    %s -v /system/bin/gaming_script
+    %s -d 6.018 ./VTK
+    \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
+	exit 0
+}
+
+update_script() {
+	temp=$(mktemp)
+	which_is_unshell=$(which unshell)
+	curl -sLo $temp https://github.com/Rem01Gaming/unshell/raw/main/unshell
+	[ $? -gt 0 ] && rm $temp && echo "error: failed to download update script" && exit 1
+	mv $temp $which_is_unshell
+	rm $temp
+	exit 0
 }
 
 decrypt_ssc() {
@@ -15,18 +40,29 @@ decrypt_ssc() {
 	spath=$(echo $PATH | cut -d: -f1)
 	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
 	chmod +x $spath/$filename.temp1.sh
-	for sec in {15..28}; do
+
+	if [ -z $EXECVE_DELAY ]; then
+		for sec in {15..28}; do
+			$filename.temp1.sh &
+			child=$!
+			sleep 0.0"$sec"
+			kill -STOP $child
+			cat /proc/$child/fd/3 >"./$filename.temp2.sh"
+			kill -TERM $child
+
+			if [ -s ./$filename.temp2.sh ]; then
+				break
+			fi
+		done
+	else
 		$filename.temp1.sh &
 		child=$!
-		sleep 0.0"$sec"
+		sleep $EXECVE_DELAY
 		kill -STOP $child
 		cat /proc/$child/fd/3 >"./$filename.temp2.sh"
 		kill -TERM $child
+	fi
 
-		if [ -s ./$filename.temp2.sh ]; then
-			break
-		fi
-	done
 	rm -f $spath/$filename.temp1.sh
 	if [ -s ./$filename.temp2.sh ]; then
 		mv ./$filename.temp2.sh ./$filename.temp1.sh
@@ -41,18 +77,29 @@ decrypt_shc() {
 	spath=$(echo $PATH | cut -d: -f1)
 	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
 	chmod +x $spath/$filename.temp1.sh
-	for sec in {1..7}; do
+
+	if [ -z $EXECVE_DELAY ]; then
+		for sec in {1..7}; do
+			$filename.temp1.sh &
+			child=$!
+			sleep 0.0"$sec"
+			kill -STOP $child
+			cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/' >"./$filename.temp2.sh"
+			kill -TERM $child
+
+			if grep -q '#!/' "./$filename.temp2.sh"; then
+				break
+			fi
+		done
+	else
 		$filename.temp1.sh &
 		child=$!
-		sleep 0.0"$sec"
+		sleep $EXECVE_DELAY
 		kill -STOP $child
 		cat /proc/$child/cmdline | sed 's/.*\(#!\)/\1/' >"./$filename.temp2.sh"
 		kill -TERM $child
+	fi
 
-		if grep -q '#!/' "./$filename.temp2.sh"; then
-			break
-		fi
-	done
 	rm -f $spath/$filename.temp1.sh
 	if grep -q '#!/' "./$filename.temp2.sh"; then
 		mv ./$filename.temp2.sh ./$filename.temp1.sh
@@ -129,11 +176,11 @@ EOF
 	rm $REP_FUNCTION
 	curl -Lo ./$filename.temp1.sh $obsf_link
 	# Don't use '||' here, just don't
-	[ $? -gt 0 ] && rm ./$filename.temp1.sh && echo "unable to download axeron script." && return 1
+	[ $? -gt 0 ] && rm ./$filename.temp1.sh && echo "error: unable to download axeron script." && return 1
 }
 
 init_dec() {
-	[ ! -f $1 ] && echo "file $1 does not exist!" && return 1
+	[ ! -f $1 ] && echo "error: file $1 does not exist!" && return 1
 
 	while true; do
 		if [ ! -f ./$filename.temp1.sh ]; then
@@ -163,7 +210,7 @@ init_dec() {
 			decrypt_shc
 			PASSED_LOOP=1
 		else
-			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "Unknown patterns, deobfuscation not supported."
+			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "error: uknown patterns, deobfuscation is not supported."
 			break
 		fi
 	done
@@ -185,13 +232,21 @@ remove_temp() {
 }
 
 if ! hash strings curl; then
-	echo "Please install binutils or binutils-is-llvm!"
+	echo "error: environment has missing dependencies"
 	exit 1
 fi
 
+for arg in "$@"; do
+	case $arg in
+	-h | --help) show_usage_unshell ;;
+	-v | --verbose) set -x && shift ;;
+	-d | --execve-delay) shift && EXECVE_DELAY=$1 && shift ;;
+	-U | --update) update_script ;;
+	esac
+done
+
 if [ -z $1 ]; then
-	show_usage_unshell
-	echo -e "\nerror: no input file"
+	echo -e "error: no input file\nFor help, type: 'unshell --help'."
 fi
 
 for file in "$@"; do
