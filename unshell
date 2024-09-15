@@ -23,12 +23,12 @@ decrypt_ssc() {
 		cat /proc/$child/fd/3 >"./$filename.temp2.sh"
 		kill -TERM $child
 
-		if grep -q '#!/' "./$filename.temp2.sh"; then
+		if [ -s ./$filename.temp2.sh ]; then
 			break
 		fi
 	done
 	rm -f $spath/$filename.temp1.sh
-	if grep -q '#!/' "./$filename.temp2.sh"; then
+	if [ -s ./$filename.temp2.sh ]; then
 		mv ./$filename.temp2.sh ./$filename.temp1.sh
 	else
 		rm ./$filename.temp2.sh ./$filename.temp1.sh
