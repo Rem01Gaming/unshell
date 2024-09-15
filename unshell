@@ -150,7 +150,7 @@ init_dec() {
 		elif grep -q 'storm\s-x' ./$filename.temp1.sh; then
 			decrypt_axeron
 			PASSED_LOOP=1
-		elif grep -q 'if\stail\s+$skip\s"$0"\s|\s/bin/bzip2\s-cd\s>>\s$tmpfile;\sthen' ./$filename.temp1.sh; then
+		elif grep -q '/bin/bzip2\s-cd' ./$filename.temp1.sh && grep -q 'skip=23' ./$filename.temp1.sh; then
 			decrypt_bzip2
 			PASSED_LOOP=1
 		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
