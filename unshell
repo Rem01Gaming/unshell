@@ -97,7 +97,9 @@ init_dec() {
 	[ ! -f $1 ] && echo "file $1 does not exist!" && return 1
 
 	while true; do
-		if grep -q '$RzE' ./$filename.temp1.sh; then
+		if [ ! -f ./$filename.temp1.sh ]; then
+			break
+		elif grep -q '$RzE' ./$filename.temp1.sh; then
 			decrypt_bashrock
 			PASSED_LOOP=1
 		elif grep -q 'Tx=Eds' ./$filename.temp1.sh; then
