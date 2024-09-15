@@ -144,7 +144,7 @@ init_dec() {
 		elif grep -q 'Tx=Eds' ./$filename.temp1.sh; then
 			decrypt_bashprotector
 			PASSED_LOOP=1
-		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh && grep -q 'eval'; then
+		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh && grep -q 'eval' ./$filename.temp1.sh; then
 			decrypt_bashobsf
 			PASSED_LOOP=1
 		elif grep -q 'storm\s-x' ./$filename.temp1.sh; then
