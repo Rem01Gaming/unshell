@@ -93,6 +93,45 @@ decrypt_base64() {
 	rm ./$filename.temp2.sh
 }
 
+decrypt_bzip2() {
+	counter=$((counter + 1))
+	echo "Layer $counter: bzip2"
+	skip=$(($(sed -n 2p ./$filename.temp1.sh | awk -F'=' '{print $2}') - 1))
+	sed 1,${skip}d ./$filename.temp1.sh >./$filename.temp2.sh
+	bzip2 -cd ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
+decrypt_axeron() {
+	counter=$((counter + 1))
+	echo "Layer $counter: Axeron online module"
+
+	cat <<"EOF" >./temp_functions.sh
+rozaq() {
+	if [ "$1" = "-d" ] && [ -n "$2" ]; then
+		[[ "${2:0:3}" = "r17" ]] && echo "${2:3}" | tr R-ZA-Qr-za-q A-Za-z | base64 -d || echo "$2"
+	else
+		echo "r17$(echo -n "$1" | base64 | tr A-Za-z R-ZA-Qr-za-q)"
+	fi
+}
+
+storm() {
+	obsf_link=$(echo $2)
+	rozaq -d $obsf_link
+}
+EOF
+
+	REP_FUNCTION="./temp_functions.sh"
+	sed "s|source \$FUNCTION|source $REP_FUNCTION|; s/\[ \"\$(id -u)\" -ne 2000 \]/! true/" ./$filename.temp1.sh >./$filename.temp2.sh
+	obsf_link=$(bash ./$filename.temp2.sh)
+	echo "Obfuscated link: $obsf_link"
+	echo "Downloading script..."
+	rm $REP_FUNCTION
+	curl -Lo ./$filename.temp1.sh $obsf_link
+	# Don't use '||' here, just don't
+	[ $? -gt 0 ] && rm ./$filename.temp1.sh && echo "unable to download axeron script." && return 1
+}
+
 init_dec() {
 	[ ! -f $1 ] && echo "file $1 does not exist!" && return 1
 
@@ -105,8 +144,14 @@ init_dec() {
 		elif grep -q 'Tx=Eds' ./$filename.temp1.sh; then
 			decrypt_bashprotector
 			PASSED_LOOP=1
-		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh; then
+		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh && grep -q 'eval'; then
 			decrypt_bashobsf
+			PASSED_LOOP=1
+		elif grep -q 'storm\s-x' ./$filename.temp1.sh; then
+			decrypt_axeron
+			PASSED_LOOP=1
+		elif grep -q 'if\stail\s+$skip\s"$0"\s|\s/bin/bzip2\s-cd\s>>\s$tmpfile;\sthen' ./$filename.temp1.sh; then
+			decrypt_bzip2
 			PASSED_LOOP=1
 		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
 			decrypt_base64
@@ -118,7 +163,7 @@ init_dec() {
 			decrypt_shc
 			PASSED_LOOP=1
 		else
-			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh
+			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "Unknown patterns, deobfuscation not supported."
 			break
 		fi
 	done
@@ -139,7 +184,7 @@ remove_temp() {
 	counter=0
 }
 
-if ! hash strings; then
+if ! hash strings curl; then
 	echo "Please install binutils or binutils-is-llvm!"
 	exit 1
 fi

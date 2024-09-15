@@ -14,7 +14,7 @@ Effortlessly deobfuscate shell scripts back into source code even with heavenly 
 <summary>Shell Script Compiler (SHC)</summary>
 SHC works internally called execve to shell, it decrypted at runtimes and visible via command line args process
 
-eg: <code>/bin/sh -c "decrypted shell"`</code>
+eg: <code>/bin/sh -c "decrypted shell"</code>
 </details>
 
 <details>
@@ -40,6 +40,16 @@ Bashrock randomize the script with random variables layered by single `base64` e
 <details>
 <summary>Bashfuscate</summary>
 Does exactly the same as BashProtector.
+</details>
+
+<details>
+<summary>bzip2</summary>
+Usually used for obfuscating tunneling/VPN scripts. the actual script is compressed with bzip2 and snuck'ed inside the decompression script itself.
+</details>
+
+<details>
+<summary>Axeron online module</summary>
+The script is actually stored somewhere online (usually public GitHub pages, script kiddies ahh behavior) and script on the module does only execution of the actual script after downloaded from cloud, the file link itself is obfuscated with base64 and rot17.
 </details>
 
 <details>
