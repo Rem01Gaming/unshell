@@ -111,7 +111,7 @@ init_dec() {
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'SSC_ARGV0'; then
 			decrypt_ssc
-			PASSED_LOOP1
+			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'E:\sneither\sargv\[0\]\snor\s\$_\sworks\.'; then
 			decrypt_shc
 			PASSED_LOOP=1
