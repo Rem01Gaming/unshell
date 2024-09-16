@@ -7,7 +7,7 @@ Effortlessly deobfuscate shell scripts back into source code even with heavenly 
 ## Features
 - Zero configuration: There's no need for any configuration
 - Penetrate: Multi layered obfuscation is not a problem
-- Easy to use: just `unshell encrypted1 encrypted2` in cmd
+- Easy to use: just `unshell -f encrypted1 encrypted2` in cmd
 
 ## Supported obfuscation method
 <details>
@@ -57,13 +57,34 @@ The script is actually stored somewhere online (usually public GitHub pages, scr
 Not too crazy, just classic <code>echo "ZWNobyBzb21lIGJhc2U2NCBlbmNyeXB0ZWQgc2hpdAo=" | base64 -d | sh</code>.
 </details>
 
-## Usage
+## Installation
 ```shell
-# Installation
-spath=$(echo $PATH | cut -d: -f1) && curl -sLo $spath/unshell https://github.com/Rem01Gaming/unshell/raw/main/unshell && chmod +x $spath/unshell
+spath=$(echo $PATH | cut -d: -f1)
+curl -sLo $spath/unshell https://github.com/Rem01Gaming/unshell/raw/main/unshell
+chmod +x $spath/unshell
+```
 
-# Deobfuscate!
-unshell encrypted1 encrypted2 # multi file input ins supported
+## Usage
+```yaml
+unshell - Deobfuscate any shell scripts with multiple methods
+  Usage: unshell [OPTION].. [FILE]...
+
+  Options:
+    -h, --help
+      print this message
+    -f, --file [FILE]...
+      Scripts you wanted to deobfuscate, multi input is supported
+    -v, --verbose
+      Be verbose
+    -d, --execve-delay [SECOND]
+      Set custom execve delay time in seconds for SHC and SSC encryption
+    -U, --update
+      Update the script
+
+  Example usages:
+    unshell -f install.sh menu.sh
+    unshell -v -f /system/bin/gaming_script
+    unshell -d 6.018 -f ./VTK
 ```
 
 ## Special Credits

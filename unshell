@@ -4,7 +4,7 @@ ulimit -s unlimited >/dev/null 2>&1
 
 show_usage_unshell() {
 	printf "%s - Deobfuscate any shell scripts with multiple methods
-  Usage: %s [OPTION]... -f [FILE]...
+  Usage: %s [OPTION].. [FILE]...
 
   Options:
     -h, --help
@@ -21,7 +21,7 @@ show_usage_unshell() {
   Example usages:
     %s -f install.sh menu.sh
     %s -v -f /system/bin/gaming_script
-    %s -d 6.018 ./VTK
+    %s -d 6.018 -f ./VTK
     \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
 	exit 0
 }
