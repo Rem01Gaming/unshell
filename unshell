@@ -27,14 +27,30 @@ show_usage_unshell() {
 }
 
 update_script() {
-	temp=$(mktemp)
+	temp="$HOME/unshell.temp"
 	which_is_unshell=$(which unshell)
-	curl -sLo $temp https://github.com/Rem01Gaming/unshell/raw/main/unshell
-	[ $? -gt 0 ] && rm $temp && echo "error: failed to download update script" && exit 1
-	mv $temp $which_is_unshell
-	chmod +x $which_is_unshell
-	echo "Updated successfully"
-	exit 0
+
+	if [ -z "$which_is_unshell" ]; then
+		echo "error: unshell command not found"
+		exit 1
+	fi
+
+	# Download the latest version
+	if ! curl -Lo "$temp" https://github.com/Rem01Gaming/unshell/raw/main/unshell; then
+		rm -f "$temp"
+		echo "error: failed to download update script"
+		exit 1
+	fi
+
+	# Ensure the current binary is removed only after successful download
+	if rm -f "$which_is_unshell" && mv "$temp" "$which_is_unshell"; then
+		chmod +x "$which_is_unshell"
+		echo "Updated successfully"
+		exit 0
+	else
+		echo "error: failed to update"
+		exit 1
+	fi
 }
 
 decrypt_ssc() {
@@ -183,8 +199,6 @@ EOF
 }
 
 init_dec() {
-	[ ! -f $1 ] && echo "error: file $1 does not exist!" && return 1
-
 	while true; do
 		if [ ! -f ./$filename.temp1.sh ]; then
 			break
@@ -279,9 +293,13 @@ if [ -z $1 ]; then
 fi
 
 for file in "$@"; do
-	PASSED_LOOP=0
-	filename=$(basename $file)
-	cp $file ./$filename.temp1.sh
-	echo "Deobfuscating $file → ./$filename.dec.sh"
-	init_dec $file
+	if [ ! -f "$file" ]; then
+		echo "error: file $file does not exist!"
+	else
+		PASSED_LOOP=0
+		filename=$(basename "$file")
+		cp "$file" "./$filename.temp1.sh"
+		echo "Deobfuscating $file → ./$filename.dec.sh"
+		init_dec "$file"
+	fi
 done
