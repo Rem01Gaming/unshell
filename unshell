@@ -30,7 +30,8 @@ update_script() {
 	curl -sLo $temp https://github.com/Rem01Gaming/unshell/raw/main/unshell
 	[ $? -gt 0 ] && rm $temp && echo "error: failed to download update script" && exit 1
 	mv $temp $which_is_unshell
-	rm $temp
+	chmod +x $which_is_unshell
+	echo "Updated successfully"
 	exit 0
 }
 
