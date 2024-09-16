@@ -61,7 +61,7 @@ decrypt_ssc() {
 	chmod +x $spath/$filename.temp1.sh
 
 	if [ -z $EXECVE_DELAY ]; then
-		for sec in {15..28}; do
+		for sec in {10..28}; do
 			$filename.temp1.sh &
 			child=$!
 			sleep 0.0"$sec"
@@ -84,6 +84,10 @@ decrypt_ssc() {
 
 	rm -f $spath/$filename.temp1.sh
 	if [ -s ./$filename.temp2.sh ]; then
+		if ! grep -q '#!/' "./$filename.temp2.sh"; then
+			echo "notice: Output script maybe truncated"
+		fi
+
 		mv ./$filename.temp2.sh ./$filename.temp1.sh
 	else
 		rm ./$filename.temp2.sh ./$filename.temp1.sh
