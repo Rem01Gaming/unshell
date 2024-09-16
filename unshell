@@ -4,21 +4,23 @@ ulimit -s unlimited >/dev/null 2>&1
 
 show_usage_unshell() {
 	printf "%s - Deobfuscate any shell scripts with multiple methods
-  Usage: %s [OPTION]... [FILE]...
+  Usage: %s [OPTION]... -f [FILE]...
 
   Options:
-    -h --help
+    -h, --help
       print this message
+    -f, --file [FILE]...
+      Scripts you wanted to deobfuscate, multi input is supported
     -v, --verbose
       Be verbose
-    -d, --execve-delay [DECIMAL]
+    -d, --execve-delay [SECOND]
       Set custom execve delay time in seconds for SHC and SSC encryption
     -U, --update
       Update the script
 
   Example usages:
-    %s install.sh menu.sh
-    %s -v /system/bin/gaming_script
+    %s -f install.sh menu.sh
+    %s -v -f /system/bin/gaming_script
     %s -d 6.018 ./VTK
     \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
 	exit 0
@@ -237,13 +239,38 @@ if ! hash strings curl; then
 	exit 1
 fi
 
-for arg in "$@"; do
-	case $arg in
-	-h | --help) show_usage_unshell ;;
-	-v | --verbose) set -x && shift ;;
-	-d | --execve-delay) shift && EXECVE_DELAY=$1 && shift ;;
-	-U | --update) update_script ;;
-	*) echo -e "error: bad option\nFor help, type: 'unshell --help'." && exit 1
+while [[ $# -gt 0 ]]; do
+	case $1 in
+	-h | --help)
+		show_usage_unshell
+		exit 0
+		;;
+	-v | --verbose)
+		set -x
+		shift
+		;;
+	-d | --execve-delay)
+		shift
+		if [[ $1 =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+			EXECVE_DELAY=$1
+		else
+			echo -e "error: execve delay MUST be a positive integer or decimal number!\nFor help, type: 'unshell --help'."
+			exit 1
+		fi
+		shift
+		;;
+	-U | --update)
+		update_script
+		shift
+		;;
+	-f | --file)
+		shift
+		break
+		;;
+	*)
+		echo -e "error: bad option\nFor help, type: 'unshell --help'."
+		exit 1
+		;;
 	esac
 done
 
