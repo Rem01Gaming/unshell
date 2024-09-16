@@ -242,6 +242,7 @@ for arg in "$@"; do
 	-v | --verbose) set -x && shift ;;
 	-d | --execve-delay) shift && EXECVE_DELAY=$1 && shift ;;
 	-U | --update) update_script ;;
+	*) echo -e "error: bad option\nFor help, type: 'unshell --help'." && exit 1
 	esac
 done
 
