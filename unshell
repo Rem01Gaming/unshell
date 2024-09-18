@@ -25,7 +25,7 @@ show_usage_unshell() {
     %s -f install.sh menu.sh
     %s -v -f /system/bin/gaming_script
     %s -d 6.018 -f ./VTK
-    %s -r ./nuked
+    %s -r .
     \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
 	exit 0
 }
@@ -325,9 +325,16 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-# Check if both -r and -f options are used together
 if [[ "$RECURSIVE" -eq 1 && "$FILES" -eq 1 ]]; then
 	echo -e "error: -r and -f option cannot coexist!\nFor help, type: 'unshell --help'."
+	exit 1
+elif [[ "$RECURSIVE" -eq 0 && "$FILES" -eq 0 ]]; then
+	echo -e "error: the following arguments are required: -f, --file or -r, --recursive\nFor help, type: 'unshell --help'."
+	exit 1
+fi
+
+if [ -z "$1" ]; then
+	echo -e "error: no input file or directory\nFor help, type: 'unshell --help'."
 	exit 1
 fi
 
@@ -340,9 +347,5 @@ if [ "$RECURSIVE" -eq 1 ]; then
 		fi
 	done
 else
-	if [ -z "$1" ]; then
-		echo -e "error: no input file or directory\nFor help, type: 'unshell --help'."
-		exit 1
-	fi
 	process_files "$@"
 fi
