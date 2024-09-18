@@ -207,6 +207,7 @@ EOF
 }
 
 init_dec() {
+	[ $VERBOSE -eq 1 ] && set -x
 	while true; do
 		if [ ! -f ./$filename.temp1.sh ]; then
 			break
@@ -241,11 +242,13 @@ init_dec() {
 	done
 
 	if [ ! -s ./$filename.temp1.sh ]; then
+		[ $VERBOSE -eq 1 ] && set +x
 		echo "Failed to deobfuscate $1"
 		remove_temp
 		return 1
 	fi
 
+	[ $VERBOSE -eq 1 ] && set +x
 	mv ./$filename.temp1.sh ./$filename.dec.sh
 	echo "./$filename.dec.sh unshelled"
 	remove_temp
@@ -283,6 +286,7 @@ fi
 
 RECURSIVE=0
 FILES=0
+VERBOSE=0
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -291,7 +295,7 @@ while [[ $# -gt 0 ]]; do
 		exit 0
 		;;
 	-v | --verbose)
-		set -x
+		VERBOSE=1
 		shift
 		;;
 	-d | --execve-delay)
@@ -318,10 +322,11 @@ while [[ $# -gt 0 ]]; do
 		shift
 		break
 		;;
-	*)
+	-*)
 		echo -e "error: bad option\nFor help, type: 'unshell --help'."
 		exit 1
 		;;
+	*) shift ;;
 	esac
 done
 
