@@ -68,12 +68,15 @@ chmod +x $spath/unshell
 ```yaml
 unshell - Deobfuscate any shell scripts with multiple methods
   Usage: unshell [OPTION].. [FILE]...
+  Usage: unshell [OPTION].. [DIR]
 
   Options:
     -h, --help
       print this message
     -f, --file [FILE]...
       Scripts you wanted to deobfuscate, multi input is supported
+    -r, --recursive [DIR]
+      Recursively find and deobfuscate all files in the specified directory
     -v, --verbose
       Be verbose
     -d, --execve-delay [SECOND]
@@ -85,6 +88,7 @@ unshell - Deobfuscate any shell scripts with multiple methods
     unshell -f install.sh menu.sh
     unshell -v -f /system/bin/gaming_script
     unshell -d 6.018 -f ./VTK
+    unshell -r .
 ```
 
 ## Special Credits
