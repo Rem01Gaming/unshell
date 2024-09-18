@@ -5,12 +5,15 @@ ulimit -s unlimited >/dev/null 2>&1
 show_usage_unshell() {
 	printf "%s - Deobfuscate any shell scripts with multiple methods
   Usage: %s [OPTION].. [FILE]...
+  Usage: %s [OPTION].. [DIR]
 
   Options:
     -h, --help
       print this message
     -f, --file [FILE]...
       Scripts you wanted to deobfuscate, multi input is supported
+    -r, --recursive [DIR]
+      Recursively find and deobfuscate all files in the specified directory
     -v, --verbose
       Be verbose
     -d, --execve-delay [SECOND]
@@ -22,7 +25,8 @@ show_usage_unshell() {
     %s -f install.sh menu.sh
     %s -v -f /system/bin/gaming_script
     %s -d 6.018 -f ./VTK
-    \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
+    %s -r ./nuked
+    \n" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}" "${0##*/}"
 	exit 0
 }
 
@@ -252,10 +256,33 @@ remove_temp() {
 	counter=0
 }
 
+process_files() {
+	for file in "$@"; do
+		if [ ! -f "$file" ]; then
+			echo "error: file $file does not exist!"
+		else
+			PASSED_LOOP=0
+			filename=$(basename "$file")
+			cp "$file" "./$filename.temp1.sh"
+			echo "Deobfuscating $file → ./$filename.dec.sh"
+			init_dec "$file"
+		fi
+	done
+}
+
+process_recursive() {
+	find "$1" -type f | while IFS= read -r file; do
+		process_files "$file"
+	done
+}
+
 if ! hash strings curl; then
 	echo "error: environment has missing dependencies"
 	exit 1
 fi
+
+RECURSIVE=0
+FILES=0
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
@@ -281,7 +308,13 @@ while [[ $# -gt 0 ]]; do
 		update_script
 		shift
 		;;
+	-r | --recursive)
+		RECURSIVE=1
+		shift
+		break
+		;;
 	-f | --file)
+		FILES=1
 		shift
 		break
 		;;
@@ -292,18 +325,24 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [ -z $1 ]; then
-	echo -e "error: no input file\nFor help, type: 'unshell --help'."
+# Check if both -r and -f options are used together
+if [[ "$RECURSIVE" -eq 1 && "$FILES" -eq 1 ]]; then
+	echo -e "error: -r and -f option cannot coexist!\nFor help, type: 'unshell --help'."
+	exit 1
 fi
 
-for file in "$@"; do
-	if [ ! -f "$file" ]; then
-		echo "error: file $file does not exist!"
-	else
-		PASSED_LOOP=0
-		filename=$(basename "$file")
-		cp "$file" "./$filename.temp1.sh"
-		echo "Deobfuscating $file → ./$filename.dec.sh"
-		init_dec "$file"
+if [ "$RECURSIVE" -eq 1 ]; then
+	for dir in "$@"; do
+		if [ -d "$dir" ]; then
+			process_recursive "$dir"
+		else
+			echo "error: $dir is not a directory!"
+		fi
+	done
+else
+	if [ -z "$1" ]; then
+		echo -e "error: no input file or directory\nFor help, type: 'unshell --help'."
+		exit 1
 	fi
-done
+	process_files "$@"
+fi
