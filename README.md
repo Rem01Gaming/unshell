@@ -67,13 +67,13 @@ chmod +x $spath/unshell
 ## Usage
 ```yaml
 unshell - Deobfuscate any shell scripts with multiple methods
-  Usage: unshell [OPTION].. [FILE]...
-  Usage: unshell [OPTION].. [DIR]
+  Usage: unshell [OPTIONS] [FILE]
+  Usage: unshell [OPTIONS] [DIR]
 
   Options:
     -h, --help
       print this message
-    -f, --file [FILE]...
+    -f, --file [FILE]
       Scripts you wanted to deobfuscate, multi input is supported
     -r, --recursive [DIR]
       Recursively find and deobfuscate all files in the specified directory

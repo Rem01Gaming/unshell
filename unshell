@@ -4,13 +4,13 @@ ulimit -s unlimited >/dev/null 2>&1
 
 show_usage_unshell() {
 	printf "%s - Deobfuscate any shell scripts with multiple methods
-  Usage: %s [OPTION].. [FILE]...
-  Usage: %s [OPTION].. [DIR]
+  Usage: %s [OPTIONS] [FILE]
+  Usage: %s [OPTIONS] [DIR]
 
   Options:
     -h, --help
       print this message
-    -f, --file [FILE]...
+    -f, --file [FILE]
       Scripts you wanted to deobfuscate, multi input is supported
     -r, --recursive [DIR]
       Recursively find and deobfuscate all files in the specified directory
@@ -274,7 +274,7 @@ process_files() {
 }
 
 process_recursive() {
-	find "$1" -type f | while IFS= read -r file; do
+	find "$1" -maxdepth 1 -type f | while IFS= read -r file; do
 		process_files "$file"
 	done
 }
