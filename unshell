@@ -57,6 +57,34 @@ update_script() {
 	fi
 }
 
+decrypt_ricrypt() {
+	counter=$((counter + 1))
+	echo "Layer $counter: Ri-crypt"
+	if ! hash strace; then
+		echo "error: environment has missing dependencies"
+		return 127
+	fi
+	spath=$(echo $PATH | cut -d: -f1)
+	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
+	chmod +x $spath/$filename.temp1.sh
+
+	strace -s 50000 -f -e trace=execve $filename.temp1.sh 2>&1 |
+		while read -r line; do
+			if echo "$line" | grep -q "eval"; then
+				pkill $filename.temp1.sh
+				echo $line | grep -oP 'eval.*?"\K[^"]+' | tr -d '\' 2>/dev/null | base64 -d >./$filename.temp2.sh
+				break
+			fi
+		done
+
+	rm -f $spath/$filename.temp1.sh
+	if [ -s ./$filename.temp2.sh ]; then
+		mv ./$filename.temp2.sh ./$filename.temp1.sh
+	else
+		rm ./$filename.temp2.sh ./$filename.temp1.sh
+	fi
+}
+
 decrypt_ssc() {
 	counter=$((counter + 1))
 	echo "Layer $counter: ssc"
@@ -234,6 +262,9 @@ init_dec() {
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'E:\sneither\sargv\[0\]\snor\s\$_\sworks\.'; then
 			decrypt_shc
+			PASSED_LOOP=1
+		elif strings ./$filename.temp1.sh | grep -q 'sh-cFailed'; then
+			decrypt_ricrypt
 			PASSED_LOOP=1
 		else
 			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "error: uknown patterns, deobfuscation is not supported."

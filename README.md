@@ -23,6 +23,11 @@ It works almost the same as SHC but this one uses C++ and shell reads from file 
 </details>
 
 <details>
+<summary>Ri-crypt</summary>
+Ri-crypt works internally called execve to shell, it decrypted at runtimes and visible via command line args process. we can retrive the shell script using `strace`.
+</details>
+
+<details>
 <summary>bash-obfuscate (Node.js CLI)</summary>
 bash-obfuscate works by randomize the script with random variables then execute it in `eval` command.
 </details>
