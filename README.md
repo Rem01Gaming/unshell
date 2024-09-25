@@ -43,8 +43,8 @@ Bashrock randomize the script with random variables layered by single `base64` e
 </details>
 
 <details>
-<summary>Bashfuscate</summary>
-Does exactly the same as BashProtector.
+<summary>Extreme comment/editor EOF trick</summary>
+Some people obfuscate their script with adding generous amounts of comments in the script until it becomes a really big file, tricking average text editor to shit itself while opening the script so people can't open it.
 </details>
 
 <details>

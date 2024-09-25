@@ -57,6 +57,17 @@ update_script() {
 	fi
 }
 
+remove_comments() {
+	counter=$((counter + 1))
+	echo "Layer $counter: Extreme comment/editor EOF trick"
+	if ! hash shfmt; then
+		echo "error: environment has missing dependencies"
+		return 127
+	fi
+	shfmt -mn ./$filename.temp1.sh >./$filename.temp2.sh
+	mv ./$filename.temp2.sh ./$filename.temp1.sh
+}
+
 decrypt_ricrypt() {
 	counter=$((counter + 1))
 	echo "Layer $counter: Ri-crypt"
@@ -256,6 +267,9 @@ init_dec() {
 			PASSED_LOOP=1
 		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
 			decrypt_base64
+			PASSED_LOOP=1
+		elif grep -q '^#[[:print:]]\{50,\}' ./$filename.temp1.sh; then
+			remove_comments
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'SSC_ARGV0'; then
 			decrypt_ssc
