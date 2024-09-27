@@ -198,6 +198,21 @@ decrypt_bashobsf() {
 	rm ./$filename.temp2.sh
 }
 
+decrypt_tpp() {
+	counter=$((counter + 1))
+	echo "Layer $counter: TPP Tool"
+	if ! hash shfmt; then
+		echo "error: environment has missing dependencies"
+		return 127
+	fi
+	shfmt -mn -w ./$filename.temp1.sh
+	echo "ulimit -s unlimited >/dev/null 2>&1" > ./$filename.temp2.sh
+	head -n -17 ./$filename.temp1.sh >> ./$filename.temp2.sh
+	tail -n 17 ./$filename.temp1.sh | sed 's/\beval\b/echo/g' >> ./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
 decrypt_base64() {
 	counter=$((counter + 1))
 	echo "Layer $counter: base64"
@@ -259,6 +274,9 @@ init_dec() {
 		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh; then
 			decrypt_bashobsf
 			PASSED_LOOP=1
+		elif grep -q 'dec_.*=$(echo\s"$enc"' ./$filename.temp1.sh && ! grep -q 'while\sread' ./$filename.temp1.sh; then
+			decrypt_tpp
+			PASSED_LOOP=1
 		elif grep -q 'storm\s-x' ./$filename.temp1.sh; then
 			decrypt_axeron
 			PASSED_LOOP=1
@@ -268,7 +286,7 @@ init_dec() {
 		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
 			decrypt_base64
 			PASSED_LOOP=1
-		elif grep -q '^#[[:print:]]\{50,\}' ./$filename.temp1.sh; then
+		elif [ $(grep -c '^#' ./$filename.temp1.sh) -gt 180 ]; then
 			remove_comments
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'SSC_ARGV0'; then
