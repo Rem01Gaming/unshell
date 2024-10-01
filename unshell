@@ -58,8 +58,6 @@ update_script() {
 }
 
 remove_comments() {
-	counter=$((counter + 1))
-	echo "Layer $counter: Extreme comment/editor EOF trick"
 	if ! hash shfmt; then
 		echo "error: environment has missing dependencies"
 		return 127
@@ -69,8 +67,6 @@ remove_comments() {
 }
 
 decrypt_ricrypt() {
-	counter=$((counter + 1))
-	echo "Layer $counter: Ri-crypt"
 	if ! hash strace; then
 		echo "error: environment has missing dependencies"
 		return 127
@@ -97,8 +93,6 @@ decrypt_ricrypt() {
 }
 
 decrypt_ssc() {
-	counter=$((counter + 1))
-	echo "Layer $counter: ssc"
 	spath=$(echo $PATH | cut -d: -f1)
 	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
 	chmod +x $spath/$filename.temp1.sh
@@ -138,8 +132,6 @@ decrypt_ssc() {
 }
 
 decrypt_shc() {
-	counter=$((counter + 1))
-	echo "Layer $counter: shc"
 	spath=$(echo $PATH | cut -d: -f1)
 	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
 	chmod +x $spath/$filename.temp1.sh
@@ -175,55 +167,43 @@ decrypt_shc() {
 }
 
 decrypt_bashrock() {
-	counter=$((counter + 1))
-	echo "Layer $counter: bashrock"
 	sed 's/eval "$x";/echo "$x";/g' ./$filename.temp1.sh >./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
 
 decrypt_bashprotector() {
-	counter=$((counter + 1))
-	echo "Layer $counter: bashprotector"
 	sed 's/\beval\b/echo/g' ./$filename.temp1.sh >./$filename.temp2.sh
 	bash ./$filename.temp2.sh | bash >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
 
 decrypt_bashobsf() {
-	counter=$((counter + 1))
-	echo "Layer $counter: bash-obfuscate"
 	sed 's/eval "\$/echo "\$/g; s/\[ "$(id -u)" -ne 2000 \]/! true/' ./$filename.temp1.sh >./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
 
 decrypt_tpp() {
-	counter=$((counter + 1))
-	echo "Layer $counter: TPP Tool"
 	if ! hash shfmt; then
 		echo "error: environment has missing dependencies"
 		return 127
 	fi
 	shfmt -mn -w ./$filename.temp1.sh
-	echo "ulimit -s unlimited >/dev/null 2>&1" > ./$filename.temp2.sh
-	head -n -17 ./$filename.temp1.sh >> ./$filename.temp2.sh
-	tail -n 17 ./$filename.temp1.sh | sed 's/\beval\b/echo/g' >> ./$filename.temp2.sh
+	echo "ulimit -s unlimited >/dev/null 2>&1" >./$filename.temp2.sh
+	head -n -17 ./$filename.temp1.sh >>./$filename.temp2.sh
+	tail -n 17 ./$filename.temp1.sh | sed 's/\beval\b/echo/g' >>./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
 
 decrypt_base64() {
-	counter=$((counter + 1))
-	echo "Layer $counter: base64"
 	sed 's/base64 -d | [a-z\/]*sh/base64 -d/; s/\[ "$(id -u)" -ne 2000 \]/! true/' ./$filename.temp1.sh >./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
 
 decrypt_bzip2() {
-	counter=$((counter + 1))
-	echo "Layer $counter: bzip2"
 	skip=$(($(sed -n 2p ./$filename.temp1.sh | awk -F'=' '{print $2}') - 1))
 	sed 1,${skip}d ./$filename.temp1.sh >./$filename.temp2.sh
 	bzip2 -cd ./$filename.temp2.sh >./$filename.temp1.sh
@@ -231,9 +211,6 @@ decrypt_bzip2() {
 }
 
 decrypt_axeron() {
-	counter=$((counter + 1))
-	echo "Layer $counter: Axeron online module"
-
 	cat <<"EOF" >./temp_functions.sh
 rozaq() {
 	if [ "$1" = "-d" ] && [ -n "$2" ]; then
@@ -260,42 +237,75 @@ EOF
 	[ $? -gt 0 ] && rm ./$filename.temp1.sh && echo "error: unable to download axeron script." && return 1
 }
 
+decrypt_eval_base64() {
+	sed 's/eval "\$/echo "\$/g; s/\[ "$(id -u)" -ne 2000 \]/! true/' ./$filename.temp1.sh >./$filename.temp2.sh
+	bash ./$filename.temp2.sh >./$filename.temp1.sh
+	rm ./$filename.temp2.sh
+}
+
 init_dec() {
 	[ $VERBOSE -eq 1 ] && set -x
 	while true; do
 		if [ ! -f ./$filename.temp1.sh ]; then
 			break
 		elif grep -q '$RzE' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: bashrock"
 			decrypt_bashrock
 			PASSED_LOOP=1
 		elif grep -q 'Tx=Eds' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: bashprotector"
 			decrypt_bashprotector
 			PASSED_LOOP=1
 		elif grep -q 'z=.*;.*z=.*;' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: bash-obfuscate"
 			decrypt_bashobsf
 			PASSED_LOOP=1
 		elif grep -q 'dec_.*=$(echo\s"$enc"' ./$filename.temp1.sh && ! grep -q 'while\sread' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: TPP Tool"
 			decrypt_tpp
 			PASSED_LOOP=1
+		elif grep -q "echo\s"$Strong_Encryptor_By_BOYZGAMES"" ./$filename.temp1.sh && ! grep -q 'ro.serialno' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Strong_Encryptor_By_BOYZGAMES (base64)"
+			decrypt_eval_base64
+			PASSED_LOOP=1
 		elif grep -q 'storm\s-x' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Axeron online module"
 			decrypt_axeron
 			PASSED_LOOP=1
 		elif grep -q '/bin/bzip2\s-cd' ./$filename.temp1.sh && grep -q 'skip=23' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: bzip2"
 			decrypt_bzip2
 			PASSED_LOOP=1
 		elif grep -q 'base64 -d | [a-z\/]*sh$' ./$filename.temp1.sh; then
+			counter=$((counter + 1))
+			echo "Layer $counter: base64"
 			decrypt_base64
 			PASSED_LOOP=1
 		elif [ $(grep -c '^#' ./$filename.temp1.sh) -gt 180 ]; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Extreme comment/editor EOF trick"
 			remove_comments
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'SSC_ARGV0'; then
+			counter=$((counter + 1))
+			echo "Layer $counter: ssc"
 			decrypt_ssc
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'E:\sneither\sargv\[0\]\snor\s\$_\sworks\.'; then
+			counter=$((counter + 1))
+			echo "Layer $counter: shc"
 			decrypt_shc
 			PASSED_LOOP=1
 		elif strings ./$filename.temp1.sh | grep -q 'sh-cFailed'; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Ri-crypt"
 			decrypt_ricrypt
 			PASSED_LOOP=1
 		else
