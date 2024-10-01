@@ -268,7 +268,7 @@ init_dec() {
 			echo "Layer $counter: TPP Tool"
 			decrypt_tpp
 			PASSED_LOOP=1
-		elif grep -q "echo\s"$Strong_Encryptor_By_BOYZGAMES"" ./$filename.temp1.sh && ! grep -q 'ro.serialno' ./$filename.temp1.sh; then
+		elif grep -q "Strong_Encryptor_By_BOYZGAMES" ./$filename.temp1.sh && ! grep -q 'ro.serialno' ./$filename.temp1.sh; then
 			counter=$((counter + 1))
 			echo "Layer $counter: Strong_Encryptor_By_BOYZGAMES (base64)"
 			decrypt_eval_base64
