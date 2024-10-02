@@ -35,7 +35,7 @@ update_script() {
 	which_is_unshell=$(which unshell)
 
 	if [ -z "$which_is_unshell" ]; then
-		echo "error: unshell command not found"
+		echo "'which' is not installed, please install it!"
 		exit 1
 	fi
 
