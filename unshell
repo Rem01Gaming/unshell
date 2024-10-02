@@ -190,9 +190,9 @@ decrypt_tpp() {
 		return 127
 	fi
 	shfmt -mn -w ./$filename.temp1.sh
-	echo "ulimit -s unlimited >/dev/null 2>&1" >./$filename.temp2.sh
-	head -n -17 ./$filename.temp1.sh >>./$filename.temp2.sh
-	tail -n 17 ./$filename.temp1.sh | sed 's/\beval\b/echo/g' >>./$filename.temp2.sh
+	sed '/<<EOF/,/EOF/d' ./$filename.temp1.sh > ./$filename.temp2.sh
+	mv ./$filename.temp2.sh ./$filename.temp1.sh
+	sed 's/eval "$\$/echo "$\$/g' ./$filename.temp1.sh > ./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }

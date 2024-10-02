@@ -40,7 +40,7 @@ Bashrock works almost the same way as bash-obfuscate.
 <details>
 <summary>TPP Tool</summary>
 The creator of the this obfuscation said "it has anti-decode feature" despite of multilayered base64 encoding that he use can easily decoded.
-As time of this being written, unshell support up to version 11 of this "tool".
+As time of this being written, unshell support up to version 12 of this "tool".
 </details>
 
 <details>
