@@ -192,7 +192,7 @@ decrypt_tpp() {
 	shfmt -mn -w ./$filename.temp1.sh
 	sed '/<<EOF/,/EOF/d' ./$filename.temp1.sh > ./$filename.temp2.sh
 	mv ./$filename.temp2.sh ./$filename.temp1.sh
-	sed 's/eval "$\$/echo "$\$/g' ./$filename.temp1.sh > ./$filename.temp2.sh
+	sed 's/eval "\$/echo "\$/g' ./$filename.temp1.sh > ./$filename.temp2.sh
 	bash ./$filename.temp2.sh >./$filename.temp1.sh
 	rm ./$filename.temp2.sh
 }
