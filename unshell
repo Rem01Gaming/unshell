@@ -251,6 +251,34 @@ decrypt_putraxitersz() {
 	rm ./$filename.temp2.sh
 }
 
+decrypt_kaminarienc() {
+    # test access of /storage/emulated/0
+    if ! touch /storage/emulated/0/.__TEST__ &>/dev/null; then
+        echo "error: Cannot access /storage/emulated/0. Please run termux-setup-storage."
+        return 1
+    fi
+    rm -f /storage/emulated/0/.__TEST__
+    
+	spath=$(echo $PATH | cut -d: -f1)
+	cp ./$filename.temp1.sh $spath/$filename.temp1.sh
+	chmod +x $spath/$filename.temp1.sh
+
+    # patch
+	sed -i "s|/data/local/tmp/.cache_script.sh|/storage/emulated/0/.__UNSHELL__|g" \
+	   $spath/$filename.temp1.sh
+
+    $spath/$filename.temp1.sh & child=$!
+	kill -STOP $child
+	cat /storage/emulated/0/.__UNSHELL__ >"./$filename.temp2.sh"
+	kill -TERM $child
+
+	if [ $(wc -c <"./$filename.temp2.sh") -gt 1 ]; then
+		mv ./$filename.temp2.sh ./$filename.temp1.sh
+	else
+		rm ./$filename.temp2.sh ./$filename.temp1.sh
+	fi
+}
+
 init_dec() {
 	[ $VERBOSE -eq 1 ] && set -x
 	while true; do
@@ -320,6 +348,11 @@ init_dec() {
 			counter=$((counter + 1))
 			echo "Layer $counter: Ri-crypt"
 			decrypt_ricrypt
+			PASSED_LOOP=1
+		elif strings ./$filename.temp1.sh | grep -q "/data/local/tmp/.cache_script.sh"; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Kaminari-enc"
+			decrypt_kaminarienc
 			PASSED_LOOP=1
 		else
 			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "error: uknown patterns, deobfuscation is not supported."
