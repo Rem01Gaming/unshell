@@ -272,6 +272,8 @@ decrypt_kaminarienc() {
 	cat /storage/emulated/0/.__UNSHELL__ >"./$filename.temp2.sh"
 	kill -TERM $child
 
+	rm -f /storage/emulated/0/.__UNSHELL__
+
 	if [ $(wc -c <"./$filename.temp2.sh") -gt 1 ]; then
 		mv ./$filename.temp2.sh ./$filename.temp1.sh
 	else
