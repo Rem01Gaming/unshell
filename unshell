@@ -251,6 +251,27 @@ decrypt_putraxitersz() {
 	rm ./$filename.temp2.sh
 }
 
+decrypt_kaminarienc() {
+        _random=$(tr -dc 'A-Za-z0-9' < /dev/random | head -c 30)
+	chmod +x $filename.temp1.sh
+
+    # patch
+	sed -i "s|/data/local/tmp/.cache_script.sh|./$_random|g" \
+	   $filename.temp1.sh
+
+    ./$filename.temp1.sh & child=$!
+	cat ./$_random >"./$filename.temp2.sh"
+	kill -TERM $child
+
+	rm -f ./$_random
+
+	if [ $(wc -c <"./$filename.temp2.sh") -gt 1 ]; then
+		mv ./$filename.temp2.sh ./$filename.temp1.sh
+	else
+		rm ./$filename.temp2.sh ./$filename.temp1.sh
+	fi
+}
+
 init_dec() {
 	[ $VERBOSE -eq 1 ] && set -x
 	while true; do
@@ -320,6 +341,11 @@ init_dec() {
 			counter=$((counter + 1))
 			echo "Layer $counter: Ri-crypt"
 			decrypt_ricrypt
+			PASSED_LOOP=1
+		elif strings ./$filename.temp1.sh | grep -q "/data/local/tmp/.cache_script.sh"; then
+			counter=$((counter + 1))
+			echo "Layer $counter: Kaminari-enc"
+			decrypt_kaminarienc
 			PASSED_LOOP=1
 		else
 			[ $PASSED_LOOP -eq 0 ] && rm ./$filename.temp1.sh && echo "error: uknown patterns, deobfuscation is not supported."
